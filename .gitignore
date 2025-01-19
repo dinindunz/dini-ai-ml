@@ -2,3 +2,4 @@
 .env
 .venv
 .devcontainer
+.DS_Store

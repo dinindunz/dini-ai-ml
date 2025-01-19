@@ -5,7 +5,6 @@ node_modules
 handler/privateKey.key
 python_layers/python/*
 !python_layers/requirements.txt
-
-# CDK asset staging directory
 .cdk.staging
 cdk.out
+*.mp3

@@ -1,5 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import { Stack, StackProps } from 'aws-cdk-lib';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
@@ -11,7 +12,8 @@ export class SentimentAnalysisStack extends Stack {
     super(scope, id, props);
 
     // Create an S3 bucket
-    const bucket = new s3.Bucket(this, 'MyBucket', {
+    const bucket = new s3.Bucket(this, 'Bucket', {
+      bucketName: "sentiment-analysis-bucket-dini",
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
     });
@@ -31,6 +33,19 @@ export class SentimentAnalysisStack extends Stack {
       handler: 'transcribe.lambda_handler',
       layers: [sharedLayer],
     });
+
+    // Grant transcribe permissions
+    transcribeLambda.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        'transcribe:StartTranscriptionJob',
+        'transcribe:GetTranscriptionJob',
+        'transcribe:ListTranscriptionJobs',
+      ],
+      resources: [
+        `arn:aws:transcribe:${this.region}:${this.account}:transcription-job/*`,
+      ],
+    }))
 
     // Create a summarise Lambda function
     const summariseLambda = new lambda.Function(this, 'SummariseLambda', {

@@ -3,7 +3,7 @@ import json
 from jinja2 import Template
 
 s3_client = boto3.client("s3")
-bedrock_runtime = boto3.client("bedrock-runtime", "us-west-2")
+bedrock_runtime = boto3.client("bedrock-runtime")
 
 
 def lambda_handler(event, context):
