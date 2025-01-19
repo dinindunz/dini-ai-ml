@@ -18,6 +18,21 @@ export class SentimentAnalysisStack extends Stack {
       autoDeleteObjects: true,
     });
 
+    // Create bucket policy needed for the lambda functions.
+    const bucketPolicy = new iam.PolicyStatement({
+      actions: [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:ListBucket",
+      ],
+      effect: iam.Effect.ALLOW,
+      resources: [
+        bucket.bucketArn,
+        bucket.bucketArn + "/*",
+      ],
+      sid: "AllowBucketAccess",
+    });
+
     // Create python layer
     const sharedLayer = new lambda.LayerVersion(this, "SharedLayer", {
       code: lambda.Code.fromAsset("./python_layers"),
@@ -32,16 +47,17 @@ export class SentimentAnalysisStack extends Stack {
       code: lambda.Code.fromAsset(join(__dirname, "..", "handler")),
       handler: 'transcribe.lambda_handler',
       layers: [sharedLayer],
+      timeout: cdk.Duration.minutes(15),
     });
 
     // Grant transcribe permissions
-    transcribeLambda.addToRolePolicy(new iam.PolicyStatement({
-      effect: iam.Effect.ALLOW,
+    transcribeLambda.addToRolePolicy(new iam.PolicyStatement({      
       actions: [
         'transcribe:StartTranscriptionJob',
         'transcribe:GetTranscriptionJob',
         'transcribe:ListTranscriptionJobs',
       ],
+      effect: iam.Effect.ALLOW,
       resources: [
         `arn:aws:transcribe:${this.region}:${this.account}:transcription-job/*`,
       ],
@@ -54,9 +70,19 @@ export class SentimentAnalysisStack extends Stack {
       code: lambda.Code.fromAsset(join(__dirname, "..", "handler")),
       handler: 'summarise.lambda_handler',
       layers: [sharedLayer],
+      timeout: cdk.Duration.minutes(15),
     });
 
-    // Grant the Lambda functions permissions to read from the bucket
+    // Grant Bedrock permissions
+    summariseLambda.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['bedrock:InvokeModel'],
+      resources: [`arn:aws:bedrock:${this.region}::foundation-model/amazon.titan-text-express-v1`],
+    }));
+
+    // Grant the Lambda functions required permissions to the bucket
+    transcribeLambda.addToRolePolicy(bucketPolicy);
+    summariseLambda.addToRolePolicy(bucketPolicy);
     bucket.grantRead(transcribeLambda);
     bucket.grantRead(summariseLambda);
 

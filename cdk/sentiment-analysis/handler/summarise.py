@@ -23,7 +23,7 @@ def lambda_handler(event, context):
         summary = bedrock_summarisation(transcript)
 
         s3_client.put_object(
-            Bucket=bucket, Key="results.txt", Body=summary, ContentType="text/plain"
+            Bucket=bucket, Key="summary.txt", Body=summary, ContentType="text/plain"
         )
 
     except Exception as e:
