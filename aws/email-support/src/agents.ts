@@ -12,7 +12,7 @@ import {
     ConversationMessage,
     ParticipantRole,
     AnthropicClassifier
-  } from 'multi-agent-orchestrator';
+  } from "multi-agent-orchestrator";
   import { BedrockAgentRuntimeClient } from "@aws-sdk/client-bedrock-agent-runtime";
 
   
@@ -181,7 +181,7 @@ import {
     saveChat: false
   });
 
-  /*const aiWithHumanVerificationAgent = new ChainAgent({
+  const aiWithHumanVerificationAgent = new ChainAgent({
     name: "AI with Human Verification Agent",
     description: "Handles high-priority or sensitive customer inquiries by generating AI responses and having them verified by a human before sending.",
     agents: [
@@ -193,7 +193,7 @@ import {
       })
     ],
     saveChat: false
-  } as ChainAgentOptions);*/
+  } as ChainAgentOptions);
 
 // Create and export the orchestrator
 export const orchestrator = new MultiAgentOrchestrator();
